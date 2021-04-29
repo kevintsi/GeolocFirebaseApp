@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "338290023646",
+    "project_id": "geolocfirestoreapp",
+    "storage_bucket": "geolocfirestoreapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338290023646:android:d0a286b92041e7237b364f",
+        "android_client_info": {
+          "package_name": "fr.kevintsi.geolocfirestoreapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338290023646-u8oam0gj8ta5rab2ppvq60gpg61j7qgd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fr.kevintsi.geolocfirestoreapp",
+            "certificate_hash": "a6c4aee6d74f63bf31bacceb58bd5213328dea8f"
+          }
+        },
+        {
+          "client_id": "338290023646-ln68lrn030rloa04giv3ao68kla7v5ig.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDX6JDFBxlW-H73RqXgIeIjpmspWc1YARg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "338290023646-ln68lrn030rloa04giv3ao68kla7v5ig.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
