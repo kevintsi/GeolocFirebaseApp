@@ -15,32 +15,54 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.view.size
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import fr.kevintsi.geolocfirestoreapp.R
 import fr.kevintsi.geolocfirestoreapp.adapter.LocationListAdapter
 import fr.kevintsi.geolocfirestoreapp.databinding.HomeFragmentBinding
 import fr.kevintsi.geolocfirestoreapp.models.LocationModel
 
 class Home : Fragment(), LocationListener {
     private lateinit var auth: FirebaseAuth
-
+    private lateinit var viewModel : HomeViewModel
+    private lateinit var binding: HomeFragmentBinding
     companion object {
         fun newInstance() = Home()
     }
 
-    private lateinit var viewModel: HomeViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         Log.d("HomeFragment:onCreateView", "Start onCreateView")
         viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
-        val binding  = HomeFragmentBinding.inflate(inflater)
-
+        binding  = HomeFragmentBinding.inflate(inflater)
         auth = Firebase.auth
+
+        return binding.root
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        Log.d("HomeFragment:onActivityCreated", "Start onActivityCreated")
+
+        binding.topAppBar.setOnMenuItemClickListener {
+            when(it.itemId) {
+                R.id.disconnect -> {
+                    auth.signOut()
+                    val action = HomeDirections.actionHome2ToLogin()
+                    findNavController().navigate(action)
+                    true
+                }
+                 else -> false
+            }
+        }
+
+        viewModel.getAllLocations(auth.currentUser)
 
         checkLocation()
 
@@ -55,38 +77,25 @@ class Home : Fragment(), LocationListener {
 
         viewModel.locationsSuccess.observe(viewLifecycleOwner) {
             Log.d("HomeFragment", "Inside locationsSuccess observe")
+            Log.d("HomeFragment", "Number of elements in Mutablelist -> ${it?.size}")
+
             val adapter = LocationListAdapter(it) {
                 viewModel.deleteLocation(it.id.toString(), auth.currentUser)
             }
+            Log.d("HomeFragment", "Number of elements -> ${adapter.itemCount}")
             binding.recylerLocations.adapter = adapter
         }
 
-        binding.logBtn.setOnClickListener {
-            auth.signOut()
-            val action = HomeDirections.actionHome2ToLogin()
-            findNavController().navigate(action)
-        }
 
         viewModel.deleteLocationResult.observe(viewLifecycleOwner) {
             Log.d("HomeFragment", "Inside deleteLocationResult observe")
             if(it) {
-                Toast.makeText(context, "Location deleted with success", Toast.LENGTH_SHORT)
+                Toast.makeText(context, "Location deleted with success", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(context, "Failed at deleting location", Toast.LENGTH_SHORT)
+                Toast.makeText(context, "Failed at deleting location", Toast.LENGTH_SHORT).show()
             }
         }
-        return binding.root
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        Log.d("HomeFragment:onActivityCreated", "Start onActivityCreated")
-        viewModel.getAllLocations(auth.currentUser)
-
-    }
-
-    override fun onStart() {
-        super.onStart()
     }
 
     private fun checkLocation() {
@@ -120,7 +129,6 @@ class Home : Fragment(), LocationListener {
         if(auth.currentUser != null) {
             Log.d("Home:onLocationChanged", "Longitude : ${location.longitude}, Latitude : ${location.latitude}")
             viewModel.updateLocation(LocationModel(null, location.longitude, location.latitude), auth.currentUser)
-            viewModel.getAllLocations(auth.currentUser)
         }
     }
 }

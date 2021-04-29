@@ -134,7 +134,7 @@ class Login : Fragment() {
         }
 
         promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Biometric login for my app")
+            .setTitle("Biometric login for GeolocFirebaseApp")
             .setSubtitle("Log in using your biometric credential")
             .setNegativeButtonText("Use account password")
             .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)

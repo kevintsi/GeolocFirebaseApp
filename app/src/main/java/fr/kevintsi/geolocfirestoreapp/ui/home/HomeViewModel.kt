@@ -4,29 +4,29 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.*
+import fr.kevintsi.geolocfirestoreapp.adapter.LocationListAdapter
 import fr.kevintsi.geolocfirestoreapp.models.LocationModel
 
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel : ViewModel(){
     var updateLocationResult = MutableLiveData<Boolean>()
     var locationsSuccess = MutableLiveData<MutableList<LocationModel>?>()
     var deleteLocationResult = MutableLiveData<Boolean>()
     var db = FirebaseFirestore.getInstance()
 
     fun updateLocation(location: LocationModel, user: FirebaseUser) {
-        val user_ = HashMap<String, String>()
-        val location_ = HashMap<String, Double>()
+        val newUser = HashMap<String, String>()
+        val newLocation = HashMap<String, GeoPoint>()
 
-        user_.put("Uid", user.uid)
-        user_.put("Display name", user.displayName)
+        newUser["Uid"] = user.uid
+        newUser["email"] = user.email
 
-        location_.put("longitude", location.longitude)
-        location_.put("latitude", location.latitude)
+        newLocation["coordinate"] = GeoPoint(location.latitude, location.longitude)
 
-        db.collection("users").document(user.uid).set(user_).addOnCompleteListener { task ->
+        db.collection("users").document(user.uid).set(newUser).addOnCompleteListener { task ->
             if(task.isSuccessful) {
-                db.document("users/${user.uid}").collection("locations").add(location_).addOnCompleteListener { task ->
+                db.document("users/${user.uid}").collection("locations").add(newLocation).addOnCompleteListener { task ->
                     updateLocationResult.value = task.isSuccessful
                 }
             } else {
@@ -35,9 +35,7 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun getAllLocations(user : FirebaseUser) {
-        locationsSuccess.value = mutableListOf()
-        val list = mutableListOf<LocationModel>()
+    fun getAllLocations(user: FirebaseUser) {
         /*db.collection("users")
             .document(user.uid)
             .collection("locations")
@@ -62,12 +60,22 @@ class HomeViewModel : ViewModel() {
                     Log.d("HomeViewModel:getAllLocations", "Listen failed.", error)
                     return@addSnapshotListener
                 }
-                for (doc in value!!) {
-                    list.add(LocationModel(doc.id, longitude = doc.data["longitude"].toString().toDouble(),
-                        latitude = doc.data["latitude"].toString().toDouble()))
+                val list = mutableListOf<LocationModel>()
+                Log.d("HomeViewModel:getAllLocations", "Listen success. $value")
+                if (value != null) {
+                    Log.d("HomeViewModel:getAllLocations", "Documents -> ${value.documents.size}")
+                    for (doc in value.documents) {
+                        Log.d("HomeViewModel:getAllLocations", "${doc.data}")
+                        val coordinate : GeoPoint  = doc.data?.get("coordinate") as GeoPoint
+                        list.add(LocationModel(doc.id, longitude = coordinate.longitude,
+                            latitude = coordinate.latitude))
                     }
-                    locationsSuccess.value = list
                 }
+
+                    Log.d("HomeViewModel:getAllLocations", "Number of elements in list temporary -> ${list}")
+                    locationsSuccess.postValue(list)
+        }
+
     }
 
     fun deleteLocation(documentId : String, user : FirebaseUser) {
